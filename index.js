@@ -7,6 +7,7 @@ const httpServer = http.createServer();
 httpServer.listen(8080, () => console.log("Server is running on 8080 port"))
 
 const clients = {};
+const games = {};
 
 const wsServer = new websocketServer({
     "httpServer": httpServer
@@ -18,7 +19,23 @@ wsServer.on("request", request => {
     connection.on("close", () => console.log("closed"))
     connection.on("message", message => {
         const result = JSON.parse(message.utf8Data)
-        console.log(result)
+        
+        if (result.method === "create") {
+            const clientId = result.clientId;
+            const gameId = guid();
+            games[gameId] = {
+                "id": gameId,
+                "balls": 20
+            }
+
+            const payLoad = {
+                "method": "create",
+                "game" : games[gameId]
+            }
+            
+            const con = clients[clientId].connection;
+            con.send(JSON.stringify(payLoad))
+        }
     })
     // crating new clientID
     const clientId = guid();
