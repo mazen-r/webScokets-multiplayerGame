@@ -3,6 +3,8 @@ const websocketServer = require("websocket").server
 const httpServer = http.createServer();
 httpServer.listen(8080, () => console.log("Server is running on 8080 port"))
 
+const clients = {};
+
 const wsServer = new websocketServer({
     "httpServer": httpServer
 })
@@ -12,8 +14,22 @@ wsServer.on("request", request => {
     connection.on("open", () => console.log("opened"))
     connection.on("close", () => console.log("closed"))
     connection.on("message", message => {
-
+        const result = JSON.parse(message.utf8Data)
+        console.log(result)
     })
+    // crating new clientID
+    const clientId = guid();
+    clients[clientId] = {
+        "connection": connetion
+    }
+
+    const payLoad = {
+        "method": "connect",
+        "clientId": clientId 
+    }
+    //sending back client connection
+    connection.send(JSON.stringify(payLoad)) //Converting payLoad to string for JSON
+
 })
 
 
